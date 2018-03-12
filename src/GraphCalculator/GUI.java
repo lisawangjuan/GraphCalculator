@@ -1,28 +1,28 @@
 package GraphCalculator;
 
+import org.omg.PortableInterceptor.INACTIVE;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.*;
 
 
 public class GUI extends JFrame implements ActionListener {
-//    rightPanel contains all calculator and history part
-    private final JPanel rightPanel;
+//    rightPanel contains all calculator and HistoryPanel part
+    private final JPanel leftPanel, rightPanel;
 //    calculator panel and its sub-panels
     private final JPanel calPanel, keyPanel, textPanel, calButPanel;
-//    private final JPanel keyPanel;
-//    private final JPanel textPanel;
-//    private final JPanel calButPanel;
-
-//    history panel and its all sub-panels
+//    HistoryPanel panel and its all sub-panels
     private final JPanel historyPanel, xAxisPanel, yAxisPanel, equationPanel, hisButPanel;
-//    private final JPanel equationPanel;
-//    private final JPanel hisButPanel;
     private final JScrollPane hisScrollPane;
+
+    private final GraphPlotPanel graph;
 
 //    graph panel
 //    private final JPanel graphPanel;
@@ -34,7 +34,7 @@ public class GUI extends JFrame implements ActionListener {
     private final DefaultListModel model;
     private final JButton but[], butAdd, butMinus, butMultiply, butDivide,
             butEqual, butCancel, butSave, butSquareRoot,butCos, butSin, butTan, butPower, butlog, butPlot, butErase, butLoad;
-    private final Calculator calc;
+    private final Calculation calc;
 
     private final String[] buttonValue = { "0", "1", "2", "3", "4", "5", "6",
             "7", "8", "9" };
@@ -42,9 +42,15 @@ public class GUI extends JFrame implements ActionListener {
     private static final Color[] colors = {Color.BLACK, Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW};
 
     public GUI() {
-        this.setTitle("Calculator");
+        this.setTitle("Calculation");
         this.setLayout(new FlowLayout());
         this.setResizable(true);
+
+        //left graph panel initialization
+        leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+
+        graph = new GraphPlotPanel();
 
         // rightPanel initialization
         rightPanel = new JPanel();
@@ -76,10 +82,10 @@ public class GUI extends JFrame implements ActionListener {
         butCancel = new JButton("C");
         butSave = new JButton("Save");
 
-        calc = new Calculator();
+        calc = new Calculation();
 
 
-        // history panel part
+        // HistoryPanel panel part
         historyPanel = new JPanel();
         historyPanel.setLayout(new BoxLayout(historyPanel, BoxLayout.Y_AXIS));
         equationPanel = new JPanel(new FlowLayout());
@@ -127,9 +133,18 @@ public class GUI extends JFrame implements ActionListener {
         this.setVisible(true);
         this.setSize(330, 300);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        this.add(calPanel);
-//        this.add(historyPanel);
+        this.add(calPanel);
+        this.add(historyPanel);
+        Integer[] x = {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5};
+        Integer[] y = {25, 16, 9, 4, 1, 0, 1, 4, 9, 16, 25};
+        ArrayList<Integer> xs = new ArrayList<Integer>(Arrays.asList(x));
+        ArrayList<Integer> ys = new ArrayList<Integer>(Arrays.asList(y));
+        graph.plot(xs, ys, "test");
+        this.add(leftPanel);
         this.add(rightPanel);
+
+        leftPanel.add(graph);
+        leftPanel.setPreferredSize(new Dimension(400,500));
 
         rightPanel.add(historyPanel);
         rightPanel.add(Box.createRigidArea(new Dimension(0,20)));       // add space between historyPanel and calPanel
@@ -175,7 +190,7 @@ public class GUI extends JFrame implements ActionListener {
         butCancel.addActionListener(this);
 
 
-        // history panel part initialization and registration
+        // HistoryPanel panel part initialization and registration
 
         historyList.setVisible(true);
         historyList.setVisibleRowCount(5);
@@ -223,9 +238,11 @@ public class GUI extends JFrame implements ActionListener {
 
         // register event handlers
         colorBox.addItemListener(new GUI.colorBoxHandler());
-        butPlot.addActionListener(new GUI.addButtonHanlder());
-        butErase.addActionListener(new GUI.delButtonHanlder());
+        butPlot.addActionListener(new GUI.plotButtonHanlder());
+        butErase.addActionListener(new GUI.eraseButtonHanlder());
         butLoad.addActionListener(new GUI.loadButtonHanlder());
+
+        pack();
     }
 
     @Override
@@ -240,48 +257,48 @@ public class GUI extends JFrame implements ActionListener {
         }
 
         if (source == butAdd) {
-            writer(calc.calculateBi(Calculator.BiOperatorModes.add, reader()));
+            writer(calc.calculateBi(Calculation.BiOperatorModes.add, reader()));
         }
 
         if (source == butMinus) {
-            writer(calc.calculateBi(Calculator.BiOperatorModes.minus, reader()));
+            writer(calc.calculateBi(Calculation.BiOperatorModes.minus, reader()));
         }
 
         if (source == butMultiply) {
-            writer(calc.calculateBi(Calculator.BiOperatorModes.multiply,
+            writer(calc.calculateBi(Calculation.BiOperatorModes.multiply,
                     reader()));
         }
 
         if (source == butDivide) {
             writer(calc
-                    .calculateBi(Calculator.BiOperatorModes.divide, reader()));
+                    .calculateBi(Calculation.BiOperatorModes.divide, reader()));
         }
         if (source == butPower) {
             writer(calc
-                    .calculateBi(Calculator.BiOperatorModes.xpowerofy, reader()));
+                    .calculateBi(Calculation.BiOperatorModes.xpowerofy, reader()));
         }
 
         if (source == butSquareRoot) {
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.squareRoot,
+            writer(calc.calculateMono(Calculation.MonoOperatorModes.squareRoot,
                     reader()));
         }
 
         if (source == butCos) {
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.cos,
+            writer(calc.calculateMono(Calculation.MonoOperatorModes.cos,
                     reader()));
         }
 
         if (source == butSin) {
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.sin,
+            writer(calc.calculateMono(Calculation.MonoOperatorModes.sin,
                     reader()));
         }
 
         if (source == butTan) {
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.tan,
+            writer(calc.calculateMono(Calculation.MonoOperatorModes.tan,
                     reader()));
         }
         if (source == butlog) {
-            writer(calc.calculateMono(Calculator.MonoOperatorModes.log,
+            writer(calc.calculateMono(Calculation.MonoOperatorModes.log,
                     reader()));
         }
 
@@ -325,38 +342,97 @@ public class GUI extends JFrame implements ActionListener {
         }
     }
 
-    //    implement add button hanlder, which addes equation to history field
-    private class addButtonHanlder implements ActionListener {
+    //    implement add button hanlder, which adds equation to HistoryPanel field and plot graph on left panel
+    private class plotButtonHanlder implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
+            // add current equation to history field
             String equation = "y = " + equationText.getText();
             System.out.println("y = " + equation);
             model.addElement(equation);
             historyList.setModel(model);
+
+            // call draw() to plot graph in left panel
+            draw();
         }
     }
 
-    //    implement del button, remove selected equation from history list
-    private class delButtonHanlder implements ActionListener {
+    //    implement del button, remove selected equation from HistoryPanel list and erase graph from left panel
+    private class eraseButtonHanlder implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
+            // remove selected equation from HistoryPanel list
             if (historyList.getSelectedIndex() != -1) {
                 int i = historyList.getSelectedIndex();
                 model.remove(i);
                 historyList.setModel(model);
             }
+
+            // call erase() to erase graph from left panel
+            erase();
         }
     }
 
-    //    implement del button, remove selected equation from history list
+    //    implement del button, load selected equation from HistoryPanel list to equation textfield and plot graph on left panel
     private class loadButtonHanlder implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
+            // load selected equation from HistoryPanel list back to equationText
             if (historyList.getSelectedIndex() != -1) {
                 int i = historyList.getSelectedIndex();
                 String equation = (String) model.getElementAt(i);
                 equationText.setText(equation.substring(4));
             }
+
+            // plot the graph
+            draw();
         }
     }
+
+
+    // take equation field, x-axis and y-axis fields content and draw a gragh
+    public void draw() {
+        String equation = equationText.getText();
+        String xRange = xAxisText.getText();
+        String yRange = yAxisText.getText();
+        ArrayList<Integer> xPoints = new ArrayList<>();
+        ArrayList<Integer> yPoints = new ArrayList<>();
+
+        // get start and end point of x, y ranges
+        String[] xRanges = xRange.substring(1,xRange.length()-1).split(",");
+        Integer xStart = Integer.parseInt(xRanges[0]);
+        Integer xEnd = Integer.parseInt(xRanges[xRanges.length-1]);
+        String[] yRanges = xRange.substring(1,yRange.length()-1).split(",");
+        Integer yStart = Integer.parseInt(yRanges[0]);
+        Integer yEnd = Integer.parseInt(yRanges[yRanges.length-1]);
+
+        // get a list of x, y coordinates calculated by given equation
+        Parse parse = new Parse();
+        for (int i = xStart; i <= xEnd; i++) {
+            int y = (int) parse.calculate(equation, i);
+            xPoints.add(i);
+            yPoints.add(y);
+        }
+
+        // truncate the coordinates lists based on user's y range input
+        for (int j = 0; j < yPoints.size(); j++) {
+            if (yPoints.get(j) < yStart || yPoints.get(j) > yEnd) {
+                xPoints.remove(j);
+                yPoints.remove(j);
+            }
+        }
+
+        // plot to left graph panel
+        graph.plot(xPoints, yPoints, equation);
+    }
+
+
+    // erase graph from left panel
+    public void erase() {
+        String equation = new String("No Equation");
+        ArrayList<Integer> xPoints = new ArrayList<>();
+        ArrayList<Integer> yPoints = new ArrayList<>();
+        graph.plot(xPoints, yPoints, equation);
+    }
+
 }
