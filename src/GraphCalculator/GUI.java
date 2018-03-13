@@ -9,6 +9,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import javax.swing.JOptionPane;
 
 import javax.swing.*;
 
@@ -33,8 +34,10 @@ public class GUI extends JFrame implements ActionListener {
     private final JComboBox<String> colorBox;
     private final DefaultListModel model;
     private final JButton but[], butAdd, butMinus, butMultiply, butDivide,
-            butEqual, butCancel, butSave, butSquareRoot,butCos, butSin, butTan, butPower, butlog, butPlot, butErase, butLoad;
+            butEqual, butCancel, butSave, butSquareRoot,butCos, butSin, butTan, butPI, butPower, butlog, butPlot, butErase, butLoad;
     private final Calculation calc;
+    private Parse parse;
+    private String answer = new String();
 
     private final String[] buttonValue = { "0", "1", "2", "3", "4", "5", "6",
             "7", "8", "9" };
@@ -78,11 +81,13 @@ public class GUI extends JFrame implements ActionListener {
         butSin = new JButton("Sin");
         butTan = new JButton("Tan");
         butlog = new JButton("log10(x)");
+        butPI = new JButton("PI");
         butEqual = new JButton("=");
         butCancel = new JButton("C");
         butSave = new JButton("Save");
 
         calc = new Calculation();
+        parse = new Parse();
 
 
         // HistoryPanel panel part
@@ -91,7 +96,6 @@ public class GUI extends JFrame implements ActionListener {
         equationPanel = new JPanel(new FlowLayout());
         xAxisPanel = new JPanel(new FlowLayout());
         yAxisPanel = new JPanel(new FlowLayout());
-//        equationPanel = new JPanel(new GridLayout(3, 2));
         hisButPanel = new JPanel(new FlowLayout());
 
         // equation label and text field
@@ -120,9 +124,6 @@ public class GUI extends JFrame implements ActionListener {
         model = new DefaultListModel();
         historyList = new JList(model);
         hisScrollPane = new JScrollPane(historyList);
-//        historyList.setSize(300, 80);
-//        historyList.setPreferredSize(new Dimension(400, 40));
-//        historyList.setFixedCellWidth(330);
 
         butPlot = new JButton("PLOT");
         butErase = new JButton("ERASE");
@@ -172,6 +173,7 @@ public class GUI extends JFrame implements ActionListener {
         keyPanel.add(butPower);
         keyPanel.add(butlog);
 
+        calButPanel.add(butPI);
         calButPanel.add(butEqual);
         calButPanel.add(butCancel);
         calButPanel.add(butSave);
@@ -185,13 +187,14 @@ public class GUI extends JFrame implements ActionListener {
         butSin.addActionListener(this);
         butTan.addActionListener(this);
         butPower.addActionListener(this);
+        butPI.addActionListener(this);
         butlog.addActionListener(this);
         butEqual.addActionListener(this);
         butCancel.addActionListener(this);
+        butSave.addActionListener(this);
 
 
         // HistoryPanel panel part initialization and registration
-
         historyList.setVisible(true);
         historyList.setVisibleRowCount(5);
         historyList.setFixedCellWidth(200);
@@ -217,24 +220,10 @@ public class GUI extends JFrame implements ActionListener {
         historyPanel.add(Box.createRigidArea(new Dimension(0,5)));
         historyPanel.add(historyLabel);
         historyPanel.add(Box.createRigidArea(new Dimension(0,5)));
-//        historyPanel.add(historyList);
         historyPanel.add(hisScrollPane);
         historyPanel.add(Box.createRigidArea(new Dimension(0,5)));
         historyPanel.add(butLoad);
         historyPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        calPanel.add(equationLabel);
-//        calPanel.add(equationPanel);
-//        calPanel.add(hisButPanel);
-//        calPanel.add(colorLabel);
-//        calPanel.add(colorBox);
-//        calPanel.add(historyLabel);
-//        calPanel.add(historyList);
-//        calPanel.add(butLoad);
-//        calPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-
-
-
 
         // register event handlers
         colorBox.addItemListener(new GUI.colorBoxHandler());
@@ -270,9 +259,9 @@ public class GUI extends JFrame implements ActionListener {
         }
 
         if (source == butDivide) {
-            writer(calc
-                    .calculateBi(Calculation.BiOperatorModes.divide, reader()));
+            writer(calc.calculateBi(Calculation.BiOperatorModes.divide, reader()));
         }
+
         if (source == butPower) {
             writer(calc
                     .calculateBi(Calculation.BiOperatorModes.xpowerofy, reader()));
@@ -294,12 +283,17 @@ public class GUI extends JFrame implements ActionListener {
         }
 
         if (source == butTan) {
-            writer(calc.calculateMono(Calculation.MonoOperatorModes.tan,
-                    reader()));
+            writer(calc.calculateMono(Calculation.MonoOperatorModes.tan, reader()));
         }
+
         if (source == butlog) {
             writer(calc.calculateMono(Calculation.MonoOperatorModes.log,
                     reader()));
+        }
+
+        if (source == butPI) {
+            text.replaceSelection("PI");
+            return;
         }
 
         if (source == butEqual) {
@@ -310,6 +304,14 @@ public class GUI extends JFrame implements ActionListener {
             writer(calc.reset());
         }
 
+        if (source == butSave) {
+            if (text.getText().equals("") || text.getText().equals("Infinity")) {
+                text.setText(answer);
+            }
+            else {
+                answer = text.getText();
+            }
+        }
         text.selectAll();
     }
 
@@ -317,15 +319,20 @@ public class GUI extends JFrame implements ActionListener {
         Double num;
         String str;
         str = text.getText();
-        num = Double.valueOf(str);
-
+        if (str.equals("PI")) {
+            num = Math.PI;
+        }
+        else {
+            num = Double.valueOf(str);
+        }
         return num;
     }
 
     public void writer(final Double num) {
         if (Double.isNaN(num)) {
             text.setText("");
-        } else {
+        }
+        else {
             text.setText(Double.toString(num));
         }
     }
@@ -338,7 +345,10 @@ public class GUI extends JFrame implements ActionListener {
         public void itemStateChanged(ItemEvent event) {
             if (event.getStateChange() == ItemEvent.SELECTED) {
                 equationText.setForeground(colors[colorBox.getSelectedIndex()]);
+                GraphPlotPanel.graphColor = colors[colorBox.getSelectedIndex()];
             }
+            leftPanel.repaint();
+            leftPanel.revalidate();
         }
     }
 
@@ -349,11 +359,18 @@ public class GUI extends JFrame implements ActionListener {
             // add current equation to history field
             String equation = "y = " + equationText.getText();
             System.out.println("y = " + equation);
-            model.addElement(equation);
-            historyList.setModel(model);
 
-            // call draw() to plot graph in left panel
-            draw();
+//            // call draw() to plot graph in left panel
+            try {
+                draw();
+                leftPanel.repaint();
+                leftPanel.revalidate();
+                model.addElement(equation);
+                historyList.setModel(model);
+            }
+            catch (RuntimeException e) {
+                JOptionPane.showMessageDialog(rightPanel, "Invalid equation, please reenter the equation, separate with space!");
+            }
         }
     }
 
@@ -370,6 +387,8 @@ public class GUI extends JFrame implements ActionListener {
 
             // call erase() to erase graph from left panel
             erase();
+            leftPanel.repaint();
+            leftPanel.revalidate();
         }
     }
 
@@ -386,6 +405,8 @@ public class GUI extends JFrame implements ActionListener {
 
             // plot the graph
             draw();
+            leftPanel.repaint();
+            leftPanel.revalidate();
         }
     }
 
@@ -402,23 +423,18 @@ public class GUI extends JFrame implements ActionListener {
         String[] xRanges = xRange.substring(1,xRange.length()-1).split(",");
         Integer xStart = Integer.parseInt(xRanges[0]);
         Integer xEnd = Integer.parseInt(xRanges[xRanges.length-1]);
-        String[] yRanges = xRange.substring(1,yRange.length()-1).split(",");
+        String[] yRanges = yRange.substring(1,yRange.length()-1).split(",");
         Integer yStart = Integer.parseInt(yRanges[0]);
         Integer yEnd = Integer.parseInt(yRanges[yRanges.length-1]);
 
         // get a list of x, y coordinates calculated by given equation
-        Parse parse = new Parse();
+
         for (int i = xStart; i <= xEnd; i++) {
             int y = (int) parse.calculate(equation, i);
-            xPoints.add(i);
-            yPoints.add(y);
-        }
-
-        // truncate the coordinates lists based on user's y range input
-        for (int j = 0; j < yPoints.size(); j++) {
-            if (yPoints.get(j) < yStart || yPoints.get(j) > yEnd) {
-                xPoints.remove(j);
-                yPoints.remove(j);
+            // truncate by using y range
+            if (y >= yStart && y <= yEnd) {
+                xPoints.add(i);
+                yPoints.add(y);
             }
         }
 
@@ -433,6 +449,7 @@ public class GUI extends JFrame implements ActionListener {
         ArrayList<Integer> xPoints = new ArrayList<>();
         ArrayList<Integer> yPoints = new ArrayList<>();
         graph.plot(xPoints, yPoints, equation);
+//        graph.revalidate();
     }
 
 }

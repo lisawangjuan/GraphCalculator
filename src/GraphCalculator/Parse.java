@@ -6,7 +6,7 @@ public class Parse {
     private static String biOperators = new String("+-*/^");
     private static String monoOperators = new String("sincostan");
 
-
+    // calculate the equation value of x = n
     public double calculate(String equation, int n) {
 
         // convert string equation to string array
@@ -79,11 +79,14 @@ public class Parse {
             }
 
         // Top of "values" contains result, return it
-        return values.pop();
-
+        double ans = values.pop();
+        if (!values.isEmpty()) {
+            throw new RuntimeException();
+        }
+        else {
+            return ans;
+        }
     }
-
-
 
 
     // Returns true if "op2" has higher or same precedence as "op1",
@@ -137,29 +140,6 @@ public class Parse {
                 return Math.tan(a);
         }
         return 0.0;
-    }
-
-
-    // for testing parse class
-    public static void main(String[] args) {
-        Parse parse = new Parse();
-        String equation1 = new String("-x + 2 * 6");
-        String equation2 = new String("100 * ( 2 + 12 )");
-        String equation3 = new String("100 * ( 2 + 12 ) / 14");
-        String equation4 = new String("tan ( x ) ^ 2");
-        String equation5 = new String("100 * 2 + 12");
-        String equation6 = new String("-9");
-
-
-        System.out.println(parse.calculate(equation1, 2));
-//        System.out.println(parse.calculate(equation2, 2));
-//        System.out.println(parse.calculate(equation3, 2));
-//        System.out.println(parse.calculate(equation4, 2));
-//        System.out.println(parse.calculate(equation5, 2));
-        System.out.println(parse.calculate(equation6, 2));
-
-
-
     }
 
 }

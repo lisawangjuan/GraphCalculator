@@ -11,6 +11,7 @@ public class GraphPlotPanel extends JPanel {
     private ArrayList<Integer> xPoints;
     private ArrayList<Integer> yPoints;
     private String equation;
+    static Color graphColor;
 
     // constructor set backgroud color and font style
     public GraphPlotPanel() {
@@ -42,7 +43,6 @@ public class GraphPlotPanel extends JPanel {
 
         // draw equation name
         g.drawString("test", 20, 20);
-//        g.drawString(this.equation, 20, 20);
 
 
         // convert xPoints and yPoints from ArrayList<Integer> to int[] and change the x, y coordinate value to make it match the new origin (getWidth()/2, getHeight()/2)
@@ -52,48 +52,7 @@ public class GraphPlotPanel extends JPanel {
             xpoints[i] = getWidth() / 2 + this.xPoints.get(i);
             ypoints[i] = getHeight() / 2 - this.yPoints.get(i);
         }
+        g.setColor(graphColor);
         g.drawPolyline(xpoints, ypoints, xpoints.length);
-    }
-
-
-    // for testing
-    public static void main(String[] args) {
-        JFrame frame = new JFrame();
-        frame.setVisible(true);
-        frame.setSize(400, 250);
-        frame.setTitle("Graph of the equation");
-        frame.setLocationRelativeTo(null);//center
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        int[] x = {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5};
-        int[] y = {25, 16, 9, 4, 1, 0, 1, 4, 9, 16, 25};
-        ArrayList<Integer> xs = new ArrayList<>();
-        ArrayList<Integer> ys = new ArrayList<>();
-        xs.add(-5);
-        xs.add(-4);
-        xs.add(-3);
-        xs.add(-2);
-        xs.add(-1);
-        xs.add(0);
-        xs.add(1);
-        xs.add(2);
-        xs.add(3);
-        xs.add(4);
-        xs.add(5);
-        ys.add(25);
-        ys.add(16);
-        ys.add(9);
-        ys.add(4);
-        ys.add(1);
-        ys.add(0);
-        ys.add(1);
-        ys.add(4);
-        ys.add(9);
-        ys.add(16);
-        ys.add(25);
-
-        GraphPlotPanel graph = new GraphPlotPanel();
-        graph.plot(xs, ys, "y= x^2");
-        frame.add(graph);
     }
 }
